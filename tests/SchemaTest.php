@@ -305,7 +305,7 @@ class SchemaTest extends PHPUnit_Framework_TestCase {
 	{
 		$schema = new Schema();
 		$this->expectException(InvalidArgumentException::class);
-		$this->expectExceptionMessage('(Regex is invalid\. Message: ").*(No ending delimiter \'\/\' found)');
+		$this->expectExceptionMessageRegExp('/(Regex is invalid\. Message: ").*(No ending delimiter \'\/\' found)/');
 		$schema->addPatternProperty('/[A-Z]{3}', new Schema());
 	}
 }
