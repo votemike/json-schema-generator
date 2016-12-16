@@ -33,6 +33,8 @@ class Schema implements JsonSerializable {
 
 	private $format;
 
+	private $patternProperties;
+
 	public function __construct($includeSchema = false)
 	{
 		$this->includeSchema = $includeSchema;
@@ -45,6 +47,21 @@ class Schema implements JsonSerializable {
 	public function addDefinition($key, Schema $schema)
 	{
 		$this->definitions[$key] = $schema;
+	}
+
+	/**
+	 * @param string $regex Regex to match property name
+	 * @param Schema $schema
+	 * @throws InvalidArgumentException
+	 */
+	public function addPatternProperty($regex, Schema $schema)
+	{
+		if (@preg_match($regex, null) === false)
+		{
+			throw new InvalidArgumentException('Regex is invalid. Message: "' . error_get_last()['message'] . '"');
+		}
+
+		$this->patternProperties[$regex] = $schema;
 	}
 
 	/**

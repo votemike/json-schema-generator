@@ -288,4 +288,24 @@ class SchemaTest extends PHPUnit_Framework_TestCase {
 		$schema->setFormat('email');
 		$this->assertEquals($jsonSchema, $schema->toJson());
 	}
+
+	public function testAddPatternProperty()
+	{
+		$jsonSchema = '{"patternProperties":{"/[A-Z]{3}/":{"type":"number"}}}';
+
+		$property = new Schema();
+		$property->setType('number');
+
+		$schema = new Schema();
+		$schema->addPatternProperty('/[A-Z]{3}/', $property);
+		$this->assertEquals($jsonSchema, $schema->toJson());
+	}
+
+	public function testAddPatternPropertyWithInvalidRegexThrowsException()
+	{
+		$schema = new Schema();
+		$this->expectException(InvalidArgumentException::class);
+		$this->expectExceptionMessage('Regex is invalid. Message: "preg_match(): No ending delimiter \'/\' found"');
+		$schema->addPatternProperty('/[A-Z]{3}', new Schema());
+	}
 }
