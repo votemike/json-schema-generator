@@ -5,9 +5,9 @@ use JsonSerializable;
 
 class Schema implements JsonSerializable {
 
-	private $description;
-
 	private $title;
+
+	private $description;
 
 	private $type;
 
