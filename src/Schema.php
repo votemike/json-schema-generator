@@ -11,6 +11,12 @@ class Schema implements JsonSerializable {
 
 	private $type;
 
+	private $allOf;
+
+	private $anyOf;
+
+	private $oneOf;
+
 	private $minimum;
 
 	private $properties;
@@ -42,6 +48,16 @@ class Schema implements JsonSerializable {
 		$this->includeSchema = $includeSchema;
 	}
 
+	public function addAllOf(Schema $schema)
+	{
+		$this->allOf[] = $schema;
+	}
+
+	public function addAnyOf(Schema $schema)
+	{
+		$this->anyOf[] = $schema;
+	}
+
 	/**
 	 * @param string $key
 	 * @param Schema $schema
@@ -49,6 +65,11 @@ class Schema implements JsonSerializable {
 	public function addDefinition($key, Schema $schema)
 	{
 		$this->definitions[$key] = $schema;
+	}
+
+	public function addOneOf(Schema $schema)
+	{
+		$this->oneOf[] = $schema;
 	}
 
 	/**

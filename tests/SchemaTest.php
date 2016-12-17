@@ -336,4 +336,52 @@ class SchemaTest extends PHPUnit_Framework_TestCase {
 		$this->expectExceptionMessageRegExp('/(Regex is invalid\. Message: ").*(No ending delimiter \'\/\' found)/');
 		$schema->addPatternProperty('/[A-Z]{3}', new Schema());
 	}
+
+	public function testAddAllOf()
+	{
+		$jsonSchema = '{"allOf":[{"type":"number"},{"minimum":0,"exclusiveMinimum":false}]}';
+
+		$schemaA = new Schema();
+		$schemaA->setType('number');
+
+		$schemaB = new Schema();
+		$schemaB->setMinimum(0);
+
+		$schema = new Schema();
+		$schema->addAllOf($schemaA);
+		$schema->addAllOf($schemaB);
+		$this->assertEquals($jsonSchema, $schema->toJson());
+	}
+
+	public function testAddAnyOf()
+	{
+		$jsonSchema = '{"anyOf":[{"type":"number"},{"type":"boolean"}]}';
+
+		$schemaA = new Schema();
+		$schemaA->setType('number');
+
+		$schemaB = new Schema();
+		$schemaB->setType('boolean');
+
+		$schema = new Schema();
+		$schema->addAnyOf($schemaA);
+		$schema->addAnyOf($schemaB);
+		$this->assertEquals($jsonSchema, $schema->toJson());
+	}
+
+	public function testAddOneOf()
+	{
+		$jsonSchema = '{"oneOf":[{"type":"number"},{"type":"boolean"}]}';
+
+		$schemaA = new Schema();
+		$schemaA->setType('number');
+
+		$schemaB = new Schema();
+		$schemaB->setType('boolean');
+
+		$schema = new Schema();
+		$schema->addOneOf($schemaA);
+		$schema->addOneOf($schemaB);
+		$this->assertEquals($jsonSchema, $schema->toJson());
+	}
 }
