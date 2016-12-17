@@ -69,7 +69,7 @@ class SchemaTest extends PHPUnit_Framework_TestCase {
 	public function testSetMinimum()
 	{
 		// From http://json-schema.org/examples.html
-		$jsonSchema = '{"description":"Age in years","type":"integer","minimum":0}';
+		$jsonSchema = '{"description":"Age in years","type":"integer","minimum":0,"exclusiveMinimum":false}';
 
 		$schema = new Schema();
 		$schema->setType("integer");
@@ -121,7 +121,7 @@ class SchemaTest extends PHPUnit_Framework_TestCase {
 	public function testBasicExample()
 	{
 		// From http://json-schema.org/examples.html
-		$jsonSchema = '{"title":"Example Schema","type":"object","properties":{"firstName":{"type":"string"},"lastName":{"type":"string"},"age":{"description":"Age in years","type":"integer","minimum":0}},"required":["firstName","lastName"]}';
+		$jsonSchema = '{"title":"Example Schema","type":"object","properties":{"firstName":{"type":"string"},"lastName":{"type":"string"},"age":{"description":"Age in years","type":"integer","minimum":0,"exclusiveMinimum":false}},"required":["firstName","lastName"]}';
 
 		$firstName = new Schema();
 		$firstName->setType("string");
@@ -154,18 +154,16 @@ class SchemaTest extends PHPUnit_Framework_TestCase {
 
 	public function testSetExclusiveMinimum()
 	{
-		// From http://json-schema.org/example1.html
-		$jsonSchema = '{"exclusiveMinimum":true}';
+		$jsonSchema = '{"minimum":0,"exclusiveMinimum":true}';
 
 		$schema = new Schema();
-		$schema->setExclusiveMinimum(true);
+		$schema->setMinimum(0, true);
 		$this->assertEquals($jsonSchema, $schema->toJson());
 	}
 
 	public function testSetItems()
 	{
-		// From http://json-schema.org/example1.html
-		$jsonSchema = '{"items":{"type":"string"}}';
+		$jsonSchema = '{"items":{"type":"string"},"uniqueItems":false}';
 
 		$item = new Schema();
 		$item->setType("string");
@@ -175,24 +173,57 @@ class SchemaTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($jsonSchema, $schema->toJson());
 	}
 
-	public function testSetMinItems()
+	public function testSetUniqueItems()
 	{
-		// From http://json-schema.org/example1.html
-		$jsonSchema = '{"minItems":1}';
+		$jsonSchema = '{"items":{"type":"string"},"uniqueItems":true}';
+		$item = new Schema();
+		$item->setType("string");
 
 		$schema = new Schema();
-		$schema->setMinItems(1);
+		$schema->setItems($item, true);
 		$this->assertEquals($jsonSchema, $schema->toJson());
 	}
 
-	public function testSetUniqueItems()
+	public function testSetMinItems()
 	{
-		// From http://json-schema.org/example1.html
-		$jsonSchema = '{"uniqueItems":true}';
+		$jsonSchema = '{"items":{"type":"string"},"minItems":2,"uniqueItems":false}';
+		$item = new Schema();
+		$item->setType("string");
 
 		$schema = new Schema();
-		$schema->setUniqueItems(true);
+		$schema->setItems($item, false, 2);
 		$this->assertEquals($jsonSchema, $schema->toJson());
+	}
+
+	public function testSetMinItemsWithValueLessThanZero()
+	{
+		$item = new Schema();
+		$item->setType("string");
+
+		$schema = new Schema();
+		$this->expectException(InvalidArgumentException::class);
+		$schema->setItems($item, false, -2);
+	}
+
+	public function testSetMaxItems()
+	{
+		$jsonSchema = '{"items":{"type":"string"},"maxItems":2,"uniqueItems":false}';
+		$item = new Schema();
+		$item->setType("string");
+
+		$schema = new Schema();
+		$schema->setItems($item, false, null, 2);
+		$this->assertEquals($jsonSchema, $schema->toJson());
+	}
+
+	public function testSetMaxItemsWithValueLessThanZero()
+	{
+		$item = new Schema();
+		$item->setType("string");
+
+		$schema = new Schema();
+		$this->expectException(InvalidArgumentException::class);
+		$schema->setItems($item, false, 2, -2);
 	}
 
 	public function testSetRef()
@@ -208,7 +239,7 @@ class SchemaTest extends PHPUnit_Framework_TestCase {
 	public function testExample1()
 	{
 		// From http://json-schema.org/example1.html
-		$jsonSchema = '{"$schema":"http://json-schema.org/draft-04/schema#","title":"Product set","type":"array","items":{"title":"Product","type":"object","properties":{"id":{"description":"The unique identifier for a product","type":"number"},"name":{"type":"string"},"price":{"type":"number","minimum":0,"exclusiveMinimum":true},"tags":{"type":"array","items":{"type":"string"},"minItems":1,"uniqueItems":true},"dimensions":{"type":"object","properties":{"length":{"type":"number"},"width":{"type":"number"},"height":{"type":"number"}},"required":["length","width","height"]},"warehouseLocation":{"description":"Coordinates of the warehouse with the product","$ref":"http://json-schema.org/geo"}},"required":["id","name","price"]}}';
+		$jsonSchema = '{"$schema":"http://json-schema.org/draft-04/schema#","title":"Product set","type":"array","items":{"title":"Product","type":"object","properties":{"id":{"description":"The unique identifier for a product","type":"number"},"name":{"type":"string"},"price":{"type":"number","minimum":0,"exclusiveMinimum":true},"tags":{"type":"array","items":{"type":"string"},"minItems":1,"uniqueItems":true},"dimensions":{"type":"object","properties":{"length":{"type":"number"},"width":{"type":"number"},"height":{"type":"number"}},"required":["length","width","height"]},"warehouseLocation":{"description":"Coordinates of the warehouse with the product","$ref":"http://json-schema.org/geo"}},"required":["id","name","price"]},"uniqueItems":false}';
 
 		$id = new Schema();
 		$id->setDescription("The unique identifier for a product");
@@ -219,17 +250,14 @@ class SchemaTest extends PHPUnit_Framework_TestCase {
 
 		$price = new Schema();
 		$price->setType("number");
-		$price->setMinimum(0);
-		$price->setExclusiveMinimum(true);
+		$price->setMinimum(0, true);
 
 		$item = new Schema();
 		$item->setType('string');
 
 		$tags = new Schema();
 		$tags->setType("array");
-		$tags->setItems($item);
-		$tags->setMinItems(1);
-		$tags->setUniqueItems(true);
+		$tags->setItems($item, true, 1);
 
 		$length = new Schema();
 		$length->setType("number");

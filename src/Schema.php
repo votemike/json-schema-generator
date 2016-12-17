@@ -23,6 +23,8 @@ class Schema implements JsonSerializable {
 
 	private $items;
 
+	private $maxItems;
+
 	private $minItems;
 
 	private $uniqueItems;
@@ -114,14 +116,6 @@ class Schema implements JsonSerializable {
 	}
 
 	/**
-	 * @param bool $exclusiveMinimum
-	 */
-	public function setExclusiveMinimum($exclusiveMinimum)
-	{
-		$this->exclusiveMinimum = $exclusiveMinimum;
-	}
-
-	/**
 	 * @param string $format
 	 */
 	public function setFormat($format)
@@ -131,26 +125,36 @@ class Schema implements JsonSerializable {
 
 	/**
 	 * @param Schema|Schema[] $items
+	 * @param bool $uniqueItems
+	 * @param int|null $minItems
+	 * @param int|null $maxItems
 	 */
-	public function setItems($items)
+	public function setItems($items, $uniqueItems = false, $minItems = null, $maxItems = null)
 	{
+		if ($minItems < 0)
+		{
+			throw new InvalidArgumentException('minItems must be greater than or equal to 0');
+		}
+
+		if ($maxItems < 0)
+		{
+			throw new InvalidArgumentException('maxItems must be greater than or equal to 0');
+		}
+
 		$this->items = $items;
+		$this->uniqueItems = $uniqueItems;
+		$this->minItems = $minItems;
+		$this->maxItems = $maxItems;
 	}
 
 	/**
 	 * @param int $minimum
+	 * @param bool $exclusiveMinimum
 	 */
-	public function setMinimum($minimum)
+	public function setMinimum($minimum, $exclusiveMinimum = false)
 	{
 		$this->minimum = $minimum;
-	}
-
-	/**
-	 * @param int $minItems
-	 */
-	public function setMinItems($minItems)
-	{
-		$this->minItems = $minItems;
+		$this->exclusiveMinimum = $exclusiveMinimum;
 	}
 
 	/**
@@ -187,14 +191,6 @@ class Schema implements JsonSerializable {
 		}
 
 		$this->type = $type;
-	}
-
-	/**
-	 * @param bool $uniqueItems
-	 */
-	public function setUniqueItems($uniqueItems)
-	{
-		$this->uniqueItems = $uniqueItems;
 	}
 
 	/**
