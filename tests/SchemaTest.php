@@ -2,6 +2,7 @@
 
 use InvalidArgumentException;
 use PHPUnit_Framework_TestCase;
+use TypeError;
 use Votemike\JsonSchema\Schema;
 
 class SchemaTest extends PHPUnit_Framework_TestCase {
@@ -383,5 +384,272 @@ class SchemaTest extends PHPUnit_Framework_TestCase {
 		$schema->addOneOf($schemaA);
 		$schema->addOneOf($schemaB);
 		$this->assertEquals($jsonSchema, $schema->toJson());
+	}
+
+	public function testSetAdditionalPropertiesWithBool()
+	{
+		$jsonSchema = '{"additionalProperties":false}';
+
+		$schema = new Schema();
+		$schema->setAdditionalProperties(false);
+		$this->assertEquals($jsonSchema, $schema->toJson());
+	}
+
+	public function testSetAdditionalPropertiesWithSchema()
+	{
+		$jsonSchema = '{"additionalProperties":{"type":"string"}}';
+
+		$item = new Schema();
+		$item->setType("string");
+
+		$schema = new Schema();
+		$schema->setAdditionalProperties($item);
+		$this->assertEquals($jsonSchema, $schema->toJson());
+	}
+
+	public function testSetAdditionalPropertiesWithStringThrowsException()
+	{
+		$schema = new Schema();
+		$this->expectException(InvalidArgumentException::class);
+		$schema->setAdditionalProperties('string');
+	}
+
+	public function testSetPattern()
+	{
+		$jsonSchema = '{"pattern":"/[A-Z]{3}/"}';
+
+		$schema = new Schema();
+		$schema->setPattern('/[A-Z]{3}/');
+		$this->assertEquals($jsonSchema, $schema->toJson());
+	}
+
+	public function testSetMaximum()
+	{
+		$jsonSchema = '{"maximum":-42,"exclusiveMaximum":false}';
+
+		$schema = new Schema();
+		$schema->setMaximum(-42);
+		$this->assertEquals($jsonSchema, $schema->toJson());
+	}
+
+	public function testSetExclusiveMaximum()
+	{
+		$jsonSchema = '{"maximum":42,"exclusiveMaximum":true}';
+
+		$schema = new Schema();
+		$schema->setMaximum(42, true);
+		$this->assertEquals($jsonSchema, $schema->toJson());
+	}
+
+	public function testSetEnum()
+	{
+		$jsonSchema = '{"enum":["Something",null]}';
+
+		$schema = new Schema();
+		$schema->setEnum(['Something', null]);
+		$this->assertEquals($jsonSchema, $schema->toJson());
+	}
+
+	public function testSetEnumWithNonArrayThrowsException()
+	{
+		$schema = new Schema();
+		$this->expectException(TypeError::class);
+		$schema->setEnum('string');
+	}
+
+	public function testExample2()
+	{
+		// From http://json-schema.org/example2.html
+		$jsonSchema = '{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "description": "schema for an fstab entry",
+    "type": "object",
+    "required": [ "storage" ],
+    "properties": {
+        "storage": {
+            "type": "object",
+            "oneOf": [
+                { "$ref": "#/definitions/diskDevice" },
+                { "$ref": "#/definitions/diskUUID" },
+                { "$ref": "#/definitions/nfs" },
+                { "$ref": "#/definitions/tmpfs" }
+            ]
+        },
+        "fstype": {
+            "enum": [ "ext3", "ext4", "btrfs" ]
+        },
+        "options": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string" },
+            "uniqueItems": true
+        },
+        "readonly": { "type": "boolean" }
+    },
+    "definitions": {
+        "diskDevice": {
+            "properties": {
+                "type": { "enum": [ "disk" ] },
+                "device": {
+                    "type": "string",
+                    "pattern": "^/dev/[^/]+(/[^/]+)*$"
+                }
+            },
+            "required": [ "type", "device" ],
+            "additionalProperties": false
+        },
+        "diskUUID": {
+            "properties": {
+                "type": { "enum": [ "disk" ] },
+                "label": {
+                    "type": "string",
+                    "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
+                }
+            },
+            "required": [ "type", "label" ],
+            "additionalProperties": false
+        },
+        "nfs": {
+            "properties": {
+                "type": { "enum": [ "nfs" ] },
+                "remotePath": {
+                    "type": "string",
+                    "pattern": "^(/[^/]+)+$"
+                },
+                "server": {
+                    "type": "string",
+                    "oneOf": [
+                        { "format": "host-name" },
+                        { "format": "ipv4" },
+                        { "format": "ipv6" }
+                    ]
+                }
+            },
+            "required": [ "type", "remotePath", "server"],
+            "additionalProperties": false
+        },
+        "tmpfs": {
+            "properties": {
+                "type": { "enum": [ "tmpfs" ] },
+                "sizeInMB": {
+                    "type": "integer",
+                    "minimum": 16,
+                    "maximum": 512,
+                    "exclusiveMinimum": false,
+                    "exclusiveMaximum": false
+                }
+            },
+            "required": [ "type", "sizeInMB" ],
+            "additionalProperties": false
+        }
+    }
+}';
+
+		$refOne = new Schema();
+		$refOne->setRef('#/definitions/diskDevice');
+
+		$refTwo = new Schema();
+		$refTwo->setRef('#/definitions/diskUUID');
+
+		$refThree = new Schema();
+		$refThree->setRef('#/definitions/nfs');
+
+		$refFour = new Schema();
+		$refFour->setRef('#/definitions/tmpfs');
+
+		$storage = new Schema();
+		$storage->setType("object");
+		$storage->addOneOf($refOne);
+		$storage->addOneOf($refTwo);
+		$storage->addOneOf($refThree);
+		$storage->addOneOf($refFour);
+
+		$fstype = new Schema();
+		$fstype->setEnum(["ext3", "ext4", "btrfs"]);
+
+		$item = new Schema();
+		$item->setType('string');
+
+		$options = new Schema();
+		$options->setType("array");
+		$options->setItems($item, true, 1);
+
+		$readonly = new Schema();
+		$readonly->setType('boolean');
+
+		$type = new Schema();
+		$type->setEnum(['disk']);
+
+		$device = new Schema();
+		$device->setType('string');
+		$device->setPattern("^/dev/[^/]+(/[^/]+)*$");
+
+		$diskDevice = new Schema();
+		$diskDevice->addProperty('type', $type, true);
+		$diskDevice->addProperty('device', $device, true);
+		$diskDevice->setAdditionalProperties(false);
+
+		$label = new Schema();
+		$label->setType('string');
+		$label->setPattern("^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$");
+
+		$diskUUID = new Schema();
+		$diskUUID->addProperty('type', $type, true);
+		$diskUUID->addProperty('label', $label, true);
+		$diskUUID->setAdditionalProperties(false);
+
+		$type = new Schema();
+		$type->setEnum(['nfs']);
+
+		$remotePath = new Schema();
+		$remotePath->setType('string');
+		$remotePath->setPattern('^(/[^/]+)+$');
+
+		$hostName = new Schema();
+		$hostName->setFormat('host-name');
+
+		$ipv4 = new Schema();
+		$ipv4->setFormat('ipv4');
+
+		$ipv6 = new Schema();
+		$ipv6->setFormat('ipv6');
+
+		$server = new Schema();
+		$server->setType('string');
+		$server->addOneOf($hostName);
+		$server->addOneOf($ipv4);
+		$server->addOneOf($ipv6);
+
+		$nfs = new Schema();
+		$nfs->addProperty('type', $type, true);
+		$nfs->addProperty('remotePath', $remotePath, true);
+		$nfs->addProperty('server', $server, true);
+		$nfs->setAdditionalProperties(false);
+
+		$type = new Schema();
+		$type->setEnum(['tmpfs']);
+
+		$sizeInMB = new Schema();
+		$sizeInMB->setType('integer');
+		$sizeInMB->setMinimum(16);
+		$sizeInMB->setMaximum(512);
+
+		$tmpfs = new Schema();
+		$tmpfs->addProperty('type', $type, true);
+		$tmpfs->addProperty('sizeInMB', $sizeInMB, true);
+		$tmpfs->setAdditionalProperties(false);
+
+		$schema = new Schema(true);
+		$schema->setDescription("schema for an fstab entry");
+		$schema->setType("object");
+		$schema->addProperty("storage", $storage, true);
+		$schema->addProperty("fstype", $fstype);
+		$schema->addProperty("options", $options);
+		$schema->addProperty("readonly", $readonly);
+		$schema->addDefinition("diskDevice", $diskDevice);
+		$schema->addDefinition("diskUUID", $diskUUID);
+		$schema->addDefinition("nfs", $nfs);
+		$schema->addDefinition("tmpfs", $tmpfs);
+		$this->assertJsonStringEqualsJsonString($jsonSchema, $schema->toJson());
 	}
 }

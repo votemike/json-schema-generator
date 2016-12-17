@@ -43,16 +43,32 @@ class Schema implements JsonSerializable {
 
 	private $patternProperties;
 
+	private $additionalProperties;
+
+	private $pattern;
+
+	private $maximum;
+
+	private $exclusiveMaximum;
+
+	private $enum;
+
 	public function __construct($includeSchema = false)
 	{
 		$this->includeSchema = $includeSchema;
 	}
 
+	/**
+	 * @param Schema $schema
+	 */
 	public function addAllOf(Schema $schema)
 	{
 		$this->allOf[] = $schema;
 	}
 
+	/**
+	 * @param Schema $schema
+	 */
 	public function addAnyOf(Schema $schema)
 	{
 		$this->anyOf[] = $schema;
@@ -67,6 +83,9 @@ class Schema implements JsonSerializable {
 		$this->definitions[$key] = $schema;
 	}
 
+	/**
+	 * @param Schema $schema
+	 */
 	public function addOneOf(Schema $schema)
 	{
 		$this->oneOf[] = $schema;
@@ -85,6 +104,19 @@ class Schema implements JsonSerializable {
 		}
 
 		$this->patternProperties[$regex] = $schema;
+	}
+
+	/**
+	 * @param bool|Schema $additionalProperties
+	 */
+	public function setAdditionalProperties($additionalProperties)
+	{
+		if (!(is_bool($additionalProperties) || $additionalProperties instanceof Schema))
+		{
+			throw new InvalidArgumentException('Parameter must be a bool or a Schema');
+		}
+
+		$this->additionalProperties = $additionalProperties;
 	}
 
 	/**
@@ -137,6 +169,14 @@ class Schema implements JsonSerializable {
 	}
 
 	/**
+	 * @param array $enum
+	 */
+	public function setEnum(array $enum)
+	{
+		$this->enum = $enum;
+	}
+
+	/**
 	 * @param string $format
 	 */
 	public function setFormat($format)
@@ -169,6 +209,16 @@ class Schema implements JsonSerializable {
 	}
 
 	/**
+	 * @param int $maximum
+	 * @param bool $exclusiveMaximum
+	 */
+	public function setMaximum($maximum, $exclusiveMaximum = false)
+	{
+		$this->maximum = $maximum;
+		$this->exclusiveMaximum = $exclusiveMaximum;
+	}
+
+	/**
 	 * @param int $minimum
 	 * @param bool $exclusiveMinimum
 	 */
@@ -176,6 +226,14 @@ class Schema implements JsonSerializable {
 	{
 		$this->minimum = $minimum;
 		$this->exclusiveMinimum = $exclusiveMinimum;
+	}
+
+	/**
+	 * @param string $pattern
+	 */
+	public function setPattern($pattern)
+	{
+		$this->pattern = $pattern;
 	}
 
 	/**
