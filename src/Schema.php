@@ -53,6 +53,12 @@ class Schema implements JsonSerializable {
 
 	private $enum;
 
+	private $not;
+
+	private $minLength;
+
+	private $maxLength;
+
 	public function __construct($includeSchema = false)
 	{
 		$this->includeSchema = $includeSchema;
@@ -226,6 +232,38 @@ class Schema implements JsonSerializable {
 	{
 		$this->minimum = $minimum;
 		$this->exclusiveMinimum = $exclusiveMinimum;
+	}
+
+	/**
+	 * @param int $maxLength
+	 */
+	public function setMaxLength($maxLength)
+	{
+		if ($maxLength < 0)
+		{
+			throw new InvalidArgumentException('maxLength must be greater than or equal to 0');
+		}
+		$this->maxLength = $maxLength;
+	}
+
+	/**
+	 * @param int $minLength
+	 */
+	public function setMinLength($minLength)
+	{
+		if ($minLength < 0)
+		{
+			throw new InvalidArgumentException('minLength must be greater than or equal to 0');
+		}
+		$this->minLength = $minLength;
+	}
+
+	/**
+	 * @param Schema $not
+	 */
+	public function setNot(Schema $not)
+	{
+		$this->not = $not;
 	}
 
 	/**

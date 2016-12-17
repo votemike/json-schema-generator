@@ -652,4 +652,48 @@ class SchemaTest extends PHPUnit_Framework_TestCase {
 		$schema->addDefinition("tmpfs", $tmpfs);
 		$this->assertJsonStringEqualsJsonString($jsonSchema, $schema->toJson());
 	}
+
+	public function testSetNot()
+	{
+		$jsonSchema = '{"not":{"type":"string"}}';
+
+		$item = new Schema();
+		$item->setType("string");
+
+		$schema = new Schema();
+		$schema->setNot($item);
+		$this->assertEquals($jsonSchema, $schema->toJson());
+	}
+
+	public function testSetMinLength()
+	{
+		$jsonSchema = '{"minLength":37}';
+
+		$schema = new Schema();
+		$schema->setMinLength(37);
+		$this->assertEquals($jsonSchema, $schema->toJson());
+	}
+
+	public function testSetMinLengthLessThanZeroThrowsException()
+	{
+		$schema = new Schema();
+		$this->expectException(InvalidArgumentException::class);
+		$schema->setMinLength(-37);
+	}
+
+	public function testSetMaxLength()
+	{
+		$jsonSchema = '{"maxLength":37}';
+
+		$schema = new Schema();
+		$schema->setMaxLength(37);
+		$this->assertEquals($jsonSchema, $schema->toJson());
+	}
+
+	public function testSetMaxLengthLessThanZeroThrowsException()
+	{
+		$schema = new Schema();
+		$this->expectException(InvalidArgumentException::class);
+		$schema->setMaxLength(-37);
+	}
 }
