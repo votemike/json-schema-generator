@@ -1,6 +1,6 @@
 # JSON Schema Generator
 
-[![Build Status](https://travis-ci.org/votemike/json-schema-generator.svg?branch=master)](https://travis-ci.org/votemike/json-schema-generator)  
+[![Build Status](https://travis-ci.org/votemike/json-schema-generator.svg?branch=master)](https://travis-ci.org/votemike/json-schema-generator)
 [![Latest Stable Version](https://poser.pugx.org/votemike/json-schema-generator/v/stable)](https://packagist.org/packages/votemike/json-schema-generator)
 [![Total Downloads](https://poser.pugx.org/votemike/json-schema-generator/downloads)](https://packagist.org/packages/votemike/json-schema-generator)
 [![Latest Unstable Version](https://poser.pugx.org/votemike/json-schema-generator/v/unstable)](https://packagist.org/packages/votemike/json-schema-generator)
