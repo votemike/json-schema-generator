@@ -696,4 +696,74 @@ class SchemaTest extends PHPUnit_Framework_TestCase {
 		$this->expectException(InvalidArgumentException::class);
 		$schema->setMaxLength(-37);
 	}
+
+	public function testSetAdditionalItemsWithBool()
+	{
+		$jsonSchema = '{"additionalItems":false}';
+
+		$schema = new Schema();
+		$schema->setAdditionalItems(false);
+		$this->assertEquals($jsonSchema, $schema->toJson());
+	}
+
+	public function testSetAdditionalItemsWithSchema()
+	{
+		$jsonSchema = '{"additionalItems":{"type":"string"}}';
+
+		$item = new Schema();
+		$item->setType("string");
+
+		$schema = new Schema();
+		$schema->setAdditionalItems($item);
+		$this->assertEquals($jsonSchema, $schema->toJson());
+	}
+
+	public function testSetAdditionalItemsWithStringThrowsException()
+	{
+		$schema = new Schema();
+		$this->expectException(InvalidArgumentException::class);
+		$schema->setAdditionalItems('string');
+	}
+
+	public function testAddDependencyWithSchema()
+	{
+		$jsonSchema = '{"dependencies":{"key":{"type":"string"}}}';
+
+		$item = new Schema();
+		$item->setType("string");
+
+		$schema = new Schema();
+		$schema->addDependency('key', $item);
+		$this->assertEquals($jsonSchema, $schema->toJson());
+	}
+
+	public function testAddDependencyWithArray()
+	{
+		$jsonSchema = '{"dependencies":{"key":["something","somethingelse"]}}';
+
+		$schema = new Schema();
+		$schema->addDependency('key', ['something', 'somethingelse']);
+		$this->assertEquals($jsonSchema, $schema->toJson());
+	}
+
+	public function testAddDependencyWithNonUniqueArrayThrowsException()
+	{
+		$schema = new Schema();
+		$this->expectException(InvalidArgumentException::class);
+		$schema->addDependency('key', ['something', 'something']);
+	}
+
+	public function testAddDependencyWithBooleanThrowsException()
+	{
+		$schema = new Schema();
+		$this->expectException(InvalidArgumentException::class);
+		$schema->addDependency('key', false);
+	}
+
+	public function testAddDependencyWithArrayWithBooleanThrowsException()
+	{
+		$schema = new Schema();
+		$this->expectException(InvalidArgumentException::class);
+		$schema->addDependency('key', [false]);
+	}
 }

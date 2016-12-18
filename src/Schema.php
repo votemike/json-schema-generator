@@ -35,6 +35,8 @@ class Schema implements JsonSerializable {
 
 	private $uniqueItems;
 
+	private $additionalItems;
+
 	private $ref;
 
 	private $definitions;
@@ -58,6 +60,8 @@ class Schema implements JsonSerializable {
 	private $minLength;
 
 	private $maxLength;
+
+	private $dependencies;
 
 	public function __construct($includeSchema = false)
 	{
@@ -90,6 +94,36 @@ class Schema implements JsonSerializable {
 	}
 
 	/**
+	 * @param string $key
+	 * @param string[]|Schema $dependency
+	 */
+	public function addDependency($key, $dependency)
+	{
+		if (!($dependency instanceof Schema || is_array($dependency)))
+		{
+			throw new InvalidArgumentException('dependency must be a Schema or array of strings');
+		}
+
+		if (is_array($dependency))
+		{
+			if (count($dependency) != count(array_unique($dependency)))
+			{
+				throw new InvalidArgumentException('dependency cannot contain duplicates');
+			}
+
+			foreach ($dependency as $item)
+			{
+				if (!is_string($item))
+				{
+					throw new InvalidArgumentException('dependency elements must be strings');
+				}
+			}
+		}
+
+		$this->dependencies[$key] = $dependency;
+	}
+
+	/**
 	 * @param Schema $schema
 	 */
 	public function addOneOf(Schema $schema)
@@ -110,6 +144,19 @@ class Schema implements JsonSerializable {
 		}
 
 		$this->patternProperties[$regex] = $schema;
+	}
+
+	/**
+	 * @param bool|Schema $additionalItems
+	 */
+	public function setAdditionalItems($additionalItems)
+	{
+		if (!(is_bool($additionalItems) || $additionalItems instanceof Schema))
+		{
+			throw new InvalidArgumentException('Parameter must be a bool or a Schema');
+		}
+
+		$this->additionalItems = $additionalItems;
 	}
 
 	/**
