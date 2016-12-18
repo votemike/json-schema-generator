@@ -17,10 +17,6 @@ Via Composer
 $ composer require votemike/json-schema-generator
 ```
 
-## TODO
-- Finish adding methods for all keywords.
-
-
 ## Credits
 
 - [Michael Gwynne](http://www.votemike.co.uk)
