@@ -2,7 +2,6 @@
 
 use InvalidArgumentException;
 use PHPUnit_Framework_TestCase;
-use TypeError;
 use Votemike\JsonSchema\Schema;
 
 class SchemaTest extends PHPUnit_Framework_TestCase {
@@ -448,13 +447,6 @@ class SchemaTest extends PHPUnit_Framework_TestCase {
 		$schema = new Schema();
 		$schema->setEnum(['Something', null]);
 		$this->assertEquals($jsonSchema, $schema->toJson());
-	}
-
-	public function testSetEnumWithNonArrayThrowsException()
-	{
-		$schema = new Schema();
-		$this->expectException(TypeError::class);
-		$schema->setEnum('string');
 	}
 
 	public function testExample2()
